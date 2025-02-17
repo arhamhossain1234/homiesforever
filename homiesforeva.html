@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Homies Foreva</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            background-color: #121212;
+            color: white;
+        }
+
+        header {
+            background: #1f1f1f;
+            color: white;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header .logo {
+            font-size: 1.8rem;
+        }
+
+        main {
+            padding: 20px;
+        }
+
+        .auth-form {
+            max-width: 400px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #333;
+            border-radius: 8px;
+        }
+
+        .auth-form h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .auth-form input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #555;
+            background-color: #222;
+            color: white;
+            border-radius: 5px;
+        }
+
+        .auth-form button {
+            width: 100%;
+            background-color: #333;
+            color: white;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .auth-form button:hover {
+            background-color: #555;
+        }
+
+        .feed {
+            margin-top: 20px;
+        }
+
+        .feed .post {
+            background: #333;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+
+        .create-post {
+            margin-top: 20px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 100px;
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #555;
+            background-color: #222;
+            color: white;
+            border-radius: 5px;
+        }
+
+        button {
+            background-color: #333;
+            color: white;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        button:hover {
+            background-color: #555;
+        }
+
+        footer {
+            background: #1f1f1f;
+            color: white;
+            text-align: center;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">Homies Foreva</div>
+        <nav id="navLinks" style="display: none;">
+            <ul>
+                <li><a href="#" onclick="logOut()">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main id="mainContent">
+        <!-- Login and Register Forms (Initially Displayed) -->
+        <div id="authContainer" class="auth-form">
+            <h2>Login / Register</h2>
+            <input type="text" id="username" placeholder="Username" />
+            <input type="password" id="password" placeholder="Password" />
+            <button id="authButton" onclick="handleAuth()">Login</button>
+            <p>Don't have an account? <a href="javascript:void(0)" onclick="toggleAuthMode()">Register</a></p>
+        </div>
+
+        <!-- Feed Section (Hidden until logged in) -->
+        <section id="feedSection" class="feed" style="display: none;">
+            <h2>Latest Posts</h2>
+            <div class="post">
+                <p><strong>User1:</strong> This is my first post!</p>
+            </div>
+            <div class="post">
+                <p><strong>User2:</strong> Hello, world!</p>
+            </div>
+
+            <!-- Create Post Section -->
+            <section class="create-post">
+                <h3>Create a New Post</h3>
+                <textarea id="postContent" placeholder="Write something..."></textarea>
+                <button onclick="createPost()">Post</button>
+            </section>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Homies Foreva. All Rights Reserved.</p>
+    </footer>
+
+    <script>
+        let isRegistering = false;
+
+        function toggleAuthMode() {
+            isRegistering = !isRegistering;
+            const authButton = document.getElementById('authButton');
+            const authText = document.querySelector('#authContainer p');
+            if (isRegistering) {
+                authButton.textContent = "Register";
+                authText.innerHTML = `Already have an account? <a href="javascript:void(0)" onclick="toggleAuthMode()">Login</a>`;
+            } else {
+                authButton.textContent = "Login";
+                authText.innerHTML = `Don't have an account? <a href="javascript:void(0)" onclick="toggleAuthMode()">Register</a>`;
+            }
+        }
+
+        function handleAuth() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            if (username.trim() === "" || password.trim() === "") {
+                alert("Please fill in both fields.");
+                return;
+            }
+
+            if (isRegistering) {
+                // Register new user
+                const existingUser = JSON.parse(localStorage.getItem('users')) || [];
+                const userExists = existingUser.find(user => user.username === username);
+
+                if (userExists) {
+                    alert("User already exists!");
+                } else {
+                    existingUser.push({ username, password });
+                    localStorage.setItem('users', JSON.stringify(existingUser));
+                    alert("Registration successful! You can now login.");
+                    toggleAuthMode();  // Switch to login after registration
+                }
+            } else {
+                // Login
+                const users = JSON.parse(localStorage.getItem('users')) || [];
+                const user = users.find(user => user.username === username && user.password === password);
+
+                if (user) {
+                    localStorage.setItem('loggedInUser', JSON.stringify(user));
+                    showHomePage();
+                } else {
+                    alert("Invalid username or password!");
+                }
+            }
+        }
+
+        function showHomePage() {
+            document.getElementById('authContainer').style.display = 'none';
+            document.getElementById('feedSection').style.display = 'block';
+            document.getElementById('navLinks').style.display = 'block';
+        }
+
+        function createPost() {
+            const postContent = document.getElementById('postContent').value;
+            if (postContent.trim()) {
+                const newPost = document.createElement('div');
+                newPost.classList.add('post');
+                newPost.innerHTML = `<p><strong>You:</strong> ${postContent}</p>`;
+                document.querySelector('.feed').appendChild(newPost);
+                document.getElementById('postContent').value = '';
+            } else {
+                alert('Please write something before posting.');
+            }
+        }
+
+        function logOut() {
+            localStorage.removeItem('loggedInUser');
+            document.getElementById('feedSection').style.display = 'none';
+            document.getElementById('authContainer').style.display = 'block';
+            document.getElementById('navLinks').style.display = 'none';
+        }
+
+        function checkLogin() {
+            const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
+            if (loggedInUser) {
+                showHomePage();
+            }
+        }
+
+        checkLogin();
+    </script>
+
+</body>
+</html>
